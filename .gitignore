@@ -1,0 +1,21 @@
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Old index and the raw 13-language crawl (too large for the repo)
+db/
+data/fastapi_doc.md
+data/fastapi_test.md
+
+# Personal notes
+INTERVIEW_PREP.md
+
+# Tools
+.claude/

@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TechDoc Copilot Explorer</title>
+<meta name="description" content="Explore real recorded results from a RAG system: compare retrieval pipelines, chunking strategies, and evaluation scores.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --surface: #f4f7f6; --surface-2: #e8efed; --border: #d6dedc;
+  --text: #14211f; --muted: #566664; --accent: #0f766e; --accent-soft: #d7f0ec; --on-accent: #ffffff;
+  --code-bg: #f4f7f6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1716; --surface: #16211f; --surface-2: #1f2c2a; --border: #2a3836;
+    --text: #e6eeec; --muted: #9aaba8; --accent: #2dd4bf; --accent-soft: #123a36; --on-accent: #06211e;
+    --code-bg: #111c1a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1716; --surface: #16211f; --surface-2: #1f2c2a; --border: #2a3836;
+  --text: #e6eeec; --muted: #9aaba8; --accent: #2dd4bf; --accent-soft: #123a36; --on-accent: #06211e;
+  --code-bg: #111c1a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 0; }
+.brand { font-weight: 700; letter-spacing: -0.015em; }
+.top nav { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+a { color: var(--accent); }
+.top nav a { color: var(--muted); text-decoration: none; }
+.top nav a:hover { color: var(--text); }
+.theme { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 3px 9px; font: inherit; font-size: 13px; cursor: pointer; }
+.hero { padding: 44px 0 30px; }
+h1 { font-size: clamp(2.1rem, 6vw, 3.3rem); line-height: 1.08; letter-spacing: -0.035em; margin: 0 0 16px; }
+h1 span { color: var(--accent); }
+.lead { font-size: 1.12rem; color: var(--muted); max-width: 680px; margin: 0 0 22px; }
+.button { display: inline-block; background: var(--accent); color: var(--on-accent); text-decoration: none; border-radius: 8px; padding: 9px 16px; font-weight: 600; font-size: 15px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 34px; }
+.stat { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--surface); }
+.stat b { display: block; font-size: 1.65rem; letter-spacing: -0.025em; line-height: 1.2; }
+.stat span { color: var(--muted); font-size: 13.5px; }
+section { padding: 42px 0; border-top: 1px solid var(--border); }
+h2 { font-size: 1.65rem; letter-spacing: -0.025em; margin: 0 0 6px; line-height: 1.2; }
+.sub { color: var(--muted); margin: 0 0 22px; max-width: 700px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chip { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 14px; cursor: pointer; text-align: left; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"], .chip[aria-selected="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.panel { border: 1px solid var(--border); border-radius: 12px; padding: 18px; background: var(--bg); min-width: 0; }
+.meta { color: var(--muted); font-size: 13.5px; margin-bottom: 10px; }
+.answer { overflow-wrap: anywhere; }
+.answer p { margin: 0 0 12px; }
+.answer ul, .answer ol { margin: 0 0 12px; padding-left: 22px; }
+.answer h3, .answer h4 { font-size: 1rem; margin: 14px 0 6px; }
+code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.86em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 0 0 12px; }
+pre code { background: none; padding: 0; font-size: inherit; }
+details { border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; background: var(--surface); }
+summary { cursor: pointer; padding: 9px 12px; font-size: 14.5px; font-weight: 500; overflow-wrap: anywhere; }
+details > div { padding: 0 12px 12px; font-size: 14px; }
+details pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 300px; overflow-y: auto; }
+.segmented { margin-bottom: 14px; }
+.chunk-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.chunk-summary div { background: var(--surface); border-radius: 8px; padding: 9px 12px; }
+.chunk-summary b { display: block; font-size: 1.2rem; }
+.chunk-summary span { color: var(--muted); font-size: 12.5px; }
+.note { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 0 0 16px; font-size: 14.5px; }
+.chunk-list { display: flex; flex-direction: column; gap: 6px; max-height: 460px; overflow-y: auto; padding-right: 3px; }
+.chunk { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 8px 11px; font: 12.5px/1.5 "JetBrains Mono", ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chunk i { display: block; font: 600 11.5px Inter, sans-serif; color: var(--accent); margin-bottom: 3px; }
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: minmax(150px, 225px) 1fr; gap: 10px; align-items: center; font-size: 14px; }
+.bar-track { position: relative; height: 26px; }
+.bar { height: 100%; min-width: 3px; background: var(--accent); border-radius: 0 4px 4px 0; }
+.bar-row:hover .bar { filter: brightness(1.12); }
+.bar-value { position: absolute; top: 2px; font-size: 13px; font-weight: 600; margin-left: 7px; }
+.pick { font-weight: 600; }
+.tag { font-size: 11px; color: var(--accent); font-weight: 600; display: block; line-height: 1.2; }
+#tooltip { position: fixed; z-index: 5; pointer-events: none; display: none; background: var(--text); color: var(--bg); border-radius: 6px; padding: 6px 9px; font-size: 12.5px; max-width: 260px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+th { color: var(--muted); font-weight: 500; }
+.table-scroll { overflow-x: auto; }
+.takeaways { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 20px; }
+.takeaway { background: var(--surface); border-radius: 10px; padding: 13px 15px; font-size: 14.5px; }
+.takeaway b { display: block; margin-bottom: 3px; }
+.flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 14px; }
+.flow button { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 14px; font-weight: 500; text-align: left; cursor: pointer; }
+.flow button small { display: block; color: var(--muted); font-size: 11.5px; font-weight: 400; }
+.flow button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.detail h3 { margin: 0 0 6px; font-size: 1.1rem; }
+.detail p { margin: 0 0 10px; }
+.detail .label { font-weight: 600; }
+footer { border-top: 1px solid var(--border); padding: 26px 0 40px; color: var(--muted); font-size: 13.5px; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 560px) { .bar-row { grid-template-columns: 1fr; gap: 2px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">TechDoc Copilot</div>
+    <nav>
+      <a href="#explore">Answers</a>
+      <a href="#chunking">Chunking</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#architecture">Architecture</a>
+      <a href="https://github.com/MoftL/techdoc-copilot">GitHub</a>
+      <button class="theme" id="theme" type="button">Theme</button>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>Learn any framework<br><span>from its own docs</span></h1>
+    <p class="lead">A RAG app that answers developer questions using only the documentation you give it, and shows its sources. This page lets you explore real recorded runs, with no setup or API key.</p>
+    <a class="button" href="#explore">Explore real results</a>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <section id="explore">
+    <h2>Same question, four pipelines</h2>
+    <p class="sub">Each result below is a real recorded run over the FastAPI docs. Pick a question, then switch pipelines to see how the sources and the answer change.</p>
+    <div class="chips" id="questions" role="group" aria-label="Questions"></div>
+    <div class="chips" id="pipelines" role="tablist" aria-label="Pipelines"></div>
+    <div class="panel" id="run"></div>
+  </section>
+
+  <section id="chunking">
+    <h2>How the text gets split</h2>
+    <p class="sub">Retrieval can only find what chunking preserves. This is one real documentation page processed five ways, including the first version of this project.</p>
+    <div class="chips segmented" id="strategies" role="group" aria-label="Chunking strategies"></div>
+    <p class="note" id="strategy-note"></p>
+    <div class="chunk-summary" id="chunk-summary"></div>
+    <div class="chunk-list" id="chunks" tabindex="0" aria-label="Chunks"></div>
+  </section>
+
+  <section id="evaluation">
+    <h2>Measured, not assumed</h2>
+    <p class="sub" id="evaluation-sub"></p>
+    <div class="chips" id="metrics" role="group" aria-label="Metric"></div>
+    <div class="bars" id="bars"></div>
+    <div class="takeaways">
+      <div class="takeaway"><b>HyDE was not worth its cost here</b>It roughly doubled search time without finding more correct pages, so the app doesn't use it by default.</div>
+      <div class="takeaway"><b>Chunking gave the clearest gain</b>Moving from plain chunks to contextual chunks added more than any single search stage.</div>
+      <div class="takeaway"><b>Small differences may be noise</b>One question out of this set moves hit rate by about 2 points, so close results should be treated as ties.</div>
+    </div>
+    <details>
+      <summary>See the full table</summary>
+      <div class="table-scroll" id="table"></div>
+    </details>
+  </section>
+
+  <section id="architecture">
+    <h2>How it works</h2>
+    <p class="sub">Select a stage to see what it does, and why it was built that way.</p>
+    <div class="flow" id="flow"></div>
+    <div class="panel detail" id="flow-detail"></div>
+  </section>
+
+  <footer>
+    Documentation content in the recorded examples comes from <a href="https://fastapi.tiangolo.com/">FastAPI</a> (MIT license). Answers are generated by a language model and can contain mistakes.
+  </footer>
+</div>
+<div id="tooltip" role="status"></div>
+
+<script>
+const STRATEGIES = {
+  first_version: { name: "First version", note: "The original approach split on every period. It broke names like fastapi.responses in half and left fragments too small to answer anything. This is why it was replaced." },
+  baseline: { name: "Baseline", note: "Fixed-size windows that never cut through a code block. Overlap repeats whole paragraphs, not parts of words." },
+  parents: { name: "Parent sections", note: "Larger sections split at headings. These are what the model reads in the Parent-Child pipeline." },
+  children: { name: "Child chunks", note: "Small, precise chunks of the first parent section. These are what gets searched in the Parent-Child pipeline." },
+  semantic: { name: "Semantic", note: "Starts a new chunk at a heading or a change of topic, and keeps code with the sentence that introduces it. Each chunk then gets AI-written context before it is indexed." }
+};
+const METRICS = {
+  hit_rate_at_k: { name: "Hit rate", format: "percent", max: 1, help: k => `Share of questions with a correct page among the ${k} sources` },
+  hit_rate_at_1: { name: "First result correct", format: "percent", max: 1, help: () => "Share of questions where the first source is from a correct page" },
+  mrr: { name: "MRR", format: "decimal", max: 1, help: () => "Rewards ranking a correct page higher. 1.0 means it always came first" },
+  avg_seconds: { name: "Search time", format: "seconds", help: () => "Average seconds to find sources, on a laptop CPU. Lower is better" }
+};
+const FLOW = [
+  { name: "Load & clean", tag: "Ingestion", what: "Splits a documentation crawl into pages and removes navigation, permalinks and link targets, while leaving code blocks untouched.", why: "The first version indexed all 13 languages of the docs, so English questions were matched against Turkish and Hindi text. Reading the data found this, not the code." },
+  { name: "Chunk", tag: "Ingestion", what: "Builds three indexes: fixed windows, parent and child sections, and semantic chunks. Code blocks are never cut, and long ones are split and re-wrapped so they stay valid.", why: "Keeping several strategies makes it possible to measure which one works rather than assume." },
+  { name: "Add context", tag: "Ingestion", what: "An LLM writes one or two sentences placing each chunk within its page. That text is embedded and added to keyword search, but the model reads only the original chunk.", why: "A chunk saying “set it to True” is hard to find on its own. Very large uploads skip this step, because it is the only expensive one." },
+  { name: "Hybrid search", tag: "Retrieval", what: "Runs vector search and BM25 keyword search, then merges both rankings with Reciprocal Rank Fusion.", why: "Vectors find meaning, and keywords find exact names like HTTPException. RRF combines rankings without having to compare their incompatible scores." },
+  { name: "Rerank", tag: "Retrieval", what: "A cross-encoder reads the question and each of 30 candidates together, then keeps the best 4. It runs on ONNX in small batches.", why: "Using ONNX removed PyTorch, and batching cut peak reranker memory from about 2 GB to 299 MB, which makes a free host realistic." },
+  { name: "Answer", tag: "Generation", what: "The model answers only from numbered sources, cites each claim, and declines when the answer isn't there.", why: "A source-backed answer can be checked. Declining honestly matters more than always having a reply." }
+];
+
+const $ = id => document.getElementById(id);
+const escapeHtml = text => String(text).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function inline(text) {
+  return escapeHtml(text)
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+}
+
+// A small Markdown renderer for trusted, recorded answers. All text is escaped first.
+function renderMarkdown(markdown) {
+  const parts = markdown.split(/(```[\s\S]*?```)/g);
+  let html = "";
+  for (const part of parts) {
+    if (part.startsWith("```")) {
+      html += `<pre><code>${escapeHtml(part.replace(/^```[^\n]*\n?/, "").replace(/\n?```$/, ""))}</code></pre>`;
+      continue;
+    }
+    let list = null;
+    let paragraph = [];
+    const flush = () => { if (paragraph.length) { html += `<p>${inline(paragraph.join(" "))}</p>`; paragraph = []; } };
+    const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
+    for (const line of part.split("\n")) {
+      const trimmed = line.trim();
+      const bullet = trimmed.match(/^[-*]\s+(.*)/);
+      const ordered = trimmed.match(/^(\d+)\.\s+(.*)/);
+      const heading = trimmed.match(/^#{1,6}\s+(.*)/);
+      if (bullet || ordered) {
+        flush();
+        const type = bullet ? "ul" : "ol";
+        if (list !== type) {
+          closeList();
+          // A code block splits a numbered list, so each part must continue from its own number.
+          html += ordered ? `<ol start="${ordered[1]}">` : "<ul>";
+          list = type;
+        }
+        html += `<li>${inline(bullet ? bullet[1] : ordered[2])}</li>`;
+      } else if (heading) {
+        flush(); closeList();
+        html += `<h4>${inline(heading[1])}</h4>`;
+      } else if (!trimmed) {
+        flush(); closeList();
+      } else {
+        closeList();
+        paragraph.push(trimmed);
+      }
+    }
+    flush(); closeList();
+  }
+  return html;
+}
+
+function formatMetric(value, metric) {
+  if (metric.format === "percent") return `${(value * 100).toFixed(1)}%`;
+  if (metric.format === "seconds") return `${value.toFixed(2)}s`;
+  return value.toFixed(3);
+}
+
+function setPressed(container, attribute, active) {
+  container.querySelectorAll("button").forEach(button => button.setAttribute(attribute, button.dataset.key === active ? "true" : "false"));
+}
+
+function makeButtons(container, items, onSelect, attribute = "aria-pressed") {
+  container.innerHTML = items.map(([key, label]) =>
+    `<button class="chip" type="button" data-key="${escapeHtml(key)}" ${attribute === "aria-selected" ? 'role="tab"' : ""}>${escapeHtml(label)}</button>`
+  ).join("");
+  container.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (button) onSelect(button.dataset.key);
+  });
+}
+
+async function start() {
+  const data = await fetch("data/demo.json").then(response => response.json());
+  const evaluation = data.evaluation;
+  const chosenLabel = "Contextual + BM25 + reranker";
+  const baseline = evaluation.pipelines.find(p => p.label === "Baseline");
+  const chosen = evaluation.pipelines.find(p => p.label === chosenLabel);
+
+  $("stats").innerHTML = [
+    [`${(chosen.hit_rate_at_k * 100).toFixed(0)}%`, `of test questions found a correct page, up from ${(baseline.hit_rate_at_k * 100).toFixed(0)}% for plain vector search`],
+    [`${evaluation.refusals.correct} of ${evaluation.refusals.total}`, "out-of-scope questions correctly declined"],
+    ["299 MB", "reranker peak memory, down from about 2 GB after tuning"],
+    [`${evaluation.question_count}`, "hand-written evaluation questions"]
+  ].map(([value, label]) => `<div class="stat"><b>${value}</b><span>${label}</span></div>`).join("");
+
+  // Explore
+  let question = 0;
+  let pipeline = data.default_pipeline;
+  const renderRun = () => {
+    const run = data.questions[question].runs[pipeline];
+    const info = data.pipelines[pipeline];
+    const declined = run.answer.includes("couldn't find this in the documents");
+    const sources = declined ? [] : run.sources;
+    $("run").innerHTML = `
+      <div class="meta">${escapeHtml(info.summary)} Search took ${run.seconds.toFixed(2)}s.</div>
+      <div class="answer">${renderMarkdown(run.answer)}</div>
+      ${sources.length ? '<div class="meta" style="margin:14px 0 0">Sources</div>' : ""}
+      ${sources.map((source, index) => `
+        <details>
+          <summary>${index + 1}. ${inline(source.heading.split(" > ").pop())}</summary>
+          <div>
+            <div class="meta">${escapeHtml(source.score)}${source.url ? ` · <a href="${escapeHtml(source.url)}">Open the page</a>` : ""}</div>
+            ${source.context ? `<p><em>${escapeHtml(source.context)}</em></p>` : ""}
+            <pre><code>${escapeHtml(source.excerpt)}</code></pre>
+          </div>
+        </details>`).join("")}`;
+  };
+  makeButtons($("questions"), data.questions.map((q, index) => [String(index), q.question]), key => {
+    question = Number(key);
+    setPressed($("questions"), "aria-pressed", key);
+    renderRun();
+  });
+  makeButtons($("pipelines"), Object.entries(data.pipelines).map(([key, p]) => [key, p.name]), key => {
+    pipeline = key;
+    setPressed($("pipelines"), "aria-selected", key);
+    renderRun();
+  }, "aria-selected");
+  setPressed($("questions"), "aria-pressed", "0");
+  setPressed($("pipelines"), "aria-selected", pipeline);
+  renderRun();
+
+  // Chunking
+  const renderStrategy = key => {
+    const chunks = data.chunking.strategies[key];
+    const tokens = chunks.map(c => c.tokens).sort((a, b) => a - b);
+    setPressed($("strategies"), "aria-pressed", key);
+    $("strategy-note").textContent = STRATEGIES[key].note;
+    $("chunk-summary").innerHTML = [
+      [chunks.length, "chunks"],
+      [tokens[Math.floor(tokens.length / 2)], "median tokens"],
+      [tokens[tokens.length - 1], "largest chunk"]
+    ].map(([value, label]) => `<div><b>${value}</b><span>${label}</span></div>`).join("");
+    $("chunks").innerHTML = chunks.map((chunk, index) =>
+      `<div class="chunk"><i>Chunk ${index + 1} · ${chunk.tokens} tokens</i>${escapeHtml(chunk.text)}</div>`
+    ).join("");
+    $("chunks").scrollTop = 0;
+  };
+  makeButtons($("strategies"), Object.entries(STRATEGIES).map(([key, s]) => [key, s.name]), renderStrategy);
+  renderStrategy("first_version");
+
+  // Evaluation
+  $("evaluation-sub").textContent = `${evaluation.question_count} hand-written questions, each with its known correct pages. Scores measure whether search found the right page, not whether the final answer was correct.`;
+  const tooltip = $("tooltip");
+  const renderMetric = key => {
+    const metric = METRICS[key];
+    const values = evaluation.pipelines.map(p => p[key]);
+    const max = metric.max || Math.max(...values);
+    setPressed($("metrics"), "aria-pressed", key);
+    $("bars").innerHTML = evaluation.pipelines.map(p => {
+      const width = (p[key] / max) * 84;
+      const picked = p.label === chosenLabel;
+      return `<div class="bar-row" data-tip="${escapeHtml(`${p.label}: ${formatMetric(p[key], metric)}. ${metric.help(evaluation.top_k)}.`)}">
+        <div class="${picked ? "pick" : ""}">${escapeHtml(p.label)}${picked ? '<span class="tag">Used by default</span>' : ""}</div>
+        <div class="bar-track"><div class="bar" style="width:${width}%"></div><span class="bar-value" style="left:${width}%">${formatMetric(p[key], metric)}</span></div>
+      </div>`;
+    }).join("");
+  };
+  makeButtons($("metrics"), Object.entries(METRICS).map(([key, m]) => [key, m.name]), renderMetric);
+  renderMetric("hit_rate_at_k");
+  $("bars").addEventListener("mousemove", event => {
+    const row = event.target.closest(".bar-row");
+    if (!row) { tooltip.style.display = "none"; return; }
+    tooltip.textContent = row.dataset.tip;
+    tooltip.style.display = "block";
+    tooltip.style.left = `${Math.min(event.clientX + 14, innerWidth - 280)}px`;
+    tooltip.style.top = `${event.clientY + 14}px`;
+  });
+  $("bars").addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+  $("table").innerHTML = `<table><thead><tr><th>Pipeline</th>${Object.values(METRICS).map(m => `<th>${m.name}</th>`).join("")}</tr></thead><tbody>${
+    evaluation.pipelines.map(p => `<tr><td>${escapeHtml(p.label)}</td>${Object.entries(METRICS).map(([key, m]) => `<td>${formatMetric(p[key], m)}</td>`).join("")}</tr>`).join("")
+  }</tbody></table>`;
+
+  // Architecture
+  const flow = $("flow");
+  flow.innerHTML = FLOW.map((step, index) => `<button type="button" data-key="${index}">${step.name}<small>${step.tag}</small></button>`).join("");
+  const renderFlow = key => {
+    const step = FLOW[Number(key)];
+    setPressed(flow, "aria-pressed", key);
+    $("flow-detail").innerHTML = `<h3>${step.name}</h3><p><span class="label">What it does: </span>${step.what}</p><p style="margin:0"><span class="label">Why: </span>${step.why}</p>`;
+  };
+  flow.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (button) renderFlow(button.dataset.key);
+  });
+  renderFlow("0");
+}
+
+$("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+
+start().catch(error => {
+  console.error(error);
+  $("run").textContent = "Couldn't load the recorded results.";
+});
+</script>
+</body>
+</html>

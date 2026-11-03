@@ -1,0 +1,88 @@
+{
+  "top_k": 4,
+  "question_count": 45,
+  "pipelines": [
+    {
+      "label": "Baseline",
+      "hit_rate_at_k": 0.8666666666666667,
+      "hit_rate_at_1": 0.7777777777777778,
+      "mrr": 0.8185185185185185,
+      "avg_seconds": 0.42243721555245833,
+      "misses": [
+        "How do I run some code after sending the response back to the client?",
+        "How do I require a path parameter to be greater than zero?",
+        "What does response_model_exclude_unset do?",
+        "How do I apply a dependency to every route in my application?",
+        "How do I add a dependency that runs but whose return value I don't need?",
+        "How do I get the currently logged in user from a token?"
+      ]
+    },
+    {
+      "label": "Parent-Child",
+      "hit_rate_at_k": 0.8888888888888888,
+      "hit_rate_at_1": 0.6666666666666666,
+      "mrr": 0.7611111111111111,
+      "avg_seconds": 0.4202886044422889,
+      "misses": [
+        "How can I set a cookie on the response?",
+        "How do I change the status code of a response dynamically inside my function?",
+        "How do I run some code after sending the response back to the client?",
+        "How do I convert a Pydantic model to something JSON compatible?",
+        "How do I apply a dependency to every route in my application?"
+      ]
+    },
+    {
+      "label": "Contextual chunks only",
+      "hit_rate_at_k": 0.9333333333333333,
+      "hit_rate_at_1": 0.8222222222222222,
+      "mrr": 0.8648148148148148,
+      "avg_seconds": 0.3718149555536608,
+      "misses": [
+        "How can I set a cookie on the response?",
+        "How do I run some code after sending the response back to the client?",
+        "How do I get the currently logged in user from a token?"
+      ]
+    },
+    {
+      "label": "Contextual + BM25",
+      "hit_rate_at_k": 0.9333333333333333,
+      "hit_rate_at_1": 0.8444444444444444,
+      "mrr": 0.8833333333333333,
+      "avg_seconds": 0.43055345777991333,
+      "misses": [
+        "How can I set a cookie on the response?",
+        "How do I run some code after sending the response back to the client?",
+        "How do I change the title and description shown in the docs?"
+      ]
+    },
+    {
+      "label": "Contextual + BM25 + reranker",
+      "hit_rate_at_k": 0.9555555555555556,
+      "hit_rate_at_1": 0.8444444444444444,
+      "mrr": 0.8851851851851852,
+      "avg_seconds": 3.2747135888862733,
+      "misses": [
+        "How do I run some code after sending the response back to the client?",
+        "What does response_model_exclude_unset do?"
+      ]
+    },
+    {
+      "label": "Advanced (adds HyDE)",
+      "hit_rate_at_k": 0.9333333333333333,
+      "hit_rate_at_1": 0.8222222222222222,
+      "mrr": 0.862962962962963,
+      "avg_seconds": 7.067637677773988,
+      "misses": [
+        "How do I run some code after sending the response back to the client?",
+        "What does response_model_exclude_unset do?",
+        "How do I apply a dependency to every route in my application?"
+      ]
+    }
+  ],
+  "refusals": {
+    "pipeline": "Advanced",
+    "correct": 6,
+    "total": 6,
+    "wrongly_answered": []
+  }
+}
