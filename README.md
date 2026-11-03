@@ -75,24 +75,26 @@ One question moves hit rate by about 2 points, so close scores are effectively t
 ## How it works
 
 ```mermaid
-flowchart LR
-    subgraph Ingestion
+flowchart TD
+    subgraph Ingestion["Ingestion: runs once per upload"]
+        direction TB
         A[Upload docs] --> B[Clean Markdown]
-        B --> C[Split into chunks<br>keeping code blocks whole]
-        C --> D[LLM writes context<br>for each chunk]
+        B --> C[Split into chunks, keeping code blocks whole]
+        C --> D[LLM writes context for each chunk]
         D --> E[(Vector index)]
         D --> F[(BM25 keyword index)]
     end
-    subgraph Answering
+    subgraph Answering["Answering: runs for every question"]
+        direction TB
         G[Question] --> H[Vector search]
         G --> I[BM25 search]
-        E -.-> H
-        F -.-> I
-        H --> J[Merge with RRF<br>30 candidates]
+        H --> J[Merge with RRF: 30 candidates]
         I --> J
-        J --> K[Cross-encoder rerank<br>best 4]
-        K --> L[LLM answers from sources<br>with citations]
+        J --> K[Cross-encoder rerank: best 4]
+        K --> L[LLM answers from sources, with citations]
     end
+    E -.-> H
+    F -.-> I
 ```
 
 <details>
