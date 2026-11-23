@@ -163,17 +163,50 @@ python src/build_index.py
 
 Hosting instructions are in the [deployment guide](docs/DEPLOYMENT.md).
 
+## Use it from your AI copilot (MCP)
+
+TechDoc also runs as an [MCP](https://modelcontextprotocol.io) server, so assistants like Claude Desktop, Claude Code, VS Code or Cursor can search the docs as a tool and answer from the excerpts, with sources to cite.
+
+| Tool | What it does |
+|---|---|
+| `search_docs` | Returns the best excerpts for a question (hybrid search + reranker), numbered with title, section, link and context. No answer is generated, so the assistant writes it from the sources |
+| `ask_docs` | Returns a cited answer from the docs, or says the docs don't cover it |
+| `index_document` | Indexes a local `.md` or `.txt` file for this session and searches it instead |
+| `use_sample_docs` | Switches back to the bundled FastAPI docs |
+
+After the setup in [Run it yourself](#run-it-yourself), add the server to your assistant. Use absolute paths, and on macOS or Linux use `venv/bin/python`.
+
+**Claude Code**
+```bash
+claude mcp add techdoc -- /path/to/techdoc-copilot/venv/Scripts/python /path/to/techdoc-copilot/src/mcp_server.py
+```
+
+**Claude Desktop** (`claude_desktop_config.json`) or **VS Code** (`.vscode/mcp.json`, where the key is `servers` instead of `mcpServers`)
+```json
+{
+  "mcpServers": {
+    "techdoc": {
+      "command": "/path/to/techdoc-copilot/venv/Scripts/python",
+      "args": ["/path/to/techdoc-copilot/src/mcp_server.py"]
+    }
+  }
+}
+```
+
+The server reads `OPENAI_API_KEY` from the project's `.env`. Search uses one embedding call per question; `ask_docs` and `index_document` cost a little more.
+
 ## Project structure
 
 ```text
 src/
 ├── app.py            Streamlit UI, usage limits, and upload flow
 ├── build_index.py    Builds the bundled sample index
+├── mcp_server.py     MCP server: the search as tools for AI assistants
 ├── core/             OpenAI client, vector store, and private workspaces
 ├── ingestion/        Loading, cleaning, chunking, and the three indexers
 └── retrieval/        Each pipeline, hybrid search, reranker, and answering
 eval/                 Question set, evaluation runner, and results
-tests/                Offline tests, including visitor isolation
+tests/                Offline tests, including visitor isolation and the MCP server
 docs/                 Interactive demo page and technical guides
 scripts/              Generates the demo data and screenshots from real runs
 ```

@@ -1,5 +1,6 @@
 chromadb==1.5.9
 fastembed==0.9.1
+mcp==2.3.0
 numpy==2.5.3
 openai==3.24.0
 python-dotenv==1.2.4
